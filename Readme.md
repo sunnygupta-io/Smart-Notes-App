@@ -439,7 +439,6 @@ To handle complex UI states where multiple components might make simultaneous AP
 7. The interceptor resolves the queue, automatically retrying all the originally failed requests with the new cookies seamlessly.
 
 If the refresh token is also expired or invalid, the queue rejects all requests, clears the session state, and redirects the user to the login screen.
-```
 
 ### Google OAuth Setup
 
