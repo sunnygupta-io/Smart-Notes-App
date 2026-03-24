@@ -497,17 +497,17 @@ The `/api/admin/stats` endpoint returns a snapshot of the entire platform:
 
 ---
 
-### 🧪 Testing
+## 🧪 Testing
 The backend includes a comprehensive automated test suite powered by Pytest. These tests ensure that the API logic, authentication flow, and database constraints remain stable as the codebase grows.
 
-## Test Coverage
+### Test Coverage
 - Authentication: Registration, login, token refresh rotation, and protected route access.
 - Notes CRUD: Full lifecycle of a note (Create, Read, Update, Delete) with strict ownership checks.
 - Tags: Creation of global tags and association logic with notes.
 - Permissions: Verification of the sharing system (e.g., ensuring a user with view permission cannot perform an edit action).
 - Admin Security: Validating that admin-only endpoints reject non-admin users.
 
-## Running Tests
+### Running Tests
 To run the test suite, ensure your virtual environment is active and use the following commands:
 
 Bash
@@ -515,17 +515,17 @@ Bash
 cd smart-notes-backend
 ```
 
-# Run all tests
+### Run all tests
 ```json
 pytest
 ```
 
-# Run tests with detailed output (verbose)
+### Run tests with detailed output (verbose)
 ```json
 pytest -v
 ```
 
-## Test Configuration
+### Test Configuration
 - The tests are designed to be isolated and repeatable:
 - Isolated Database: Uses a separate test database initialized via conftest.py to prevent data loss in development.
 - Async Testing: Utilizes httpx for testing FastAPI's endpoints efficiently.
