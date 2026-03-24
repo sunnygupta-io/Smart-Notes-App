@@ -31,6 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .then((res) => {
           // console.log("SUCCESS:", res.data);
           setUser(res.data);
+
+          
         })
         .catch(() => {
           // localStorage.removeItem("token");
