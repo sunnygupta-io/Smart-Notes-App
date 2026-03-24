@@ -4,6 +4,7 @@ import { AuthProvider } from "./AuthContext";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -21,8 +22,9 @@ const App = () => {
         <Navbar />
         <Routes>
           {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/*" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/auth/google/callback" element={<GoogleCallback/>}/>
 
           {/* Protected Routes */}
@@ -77,6 +79,8 @@ const App = () => {
           />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

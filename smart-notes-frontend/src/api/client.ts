@@ -8,13 +8,13 @@ const client = axios.create({
 let isRefreshing = false;
 let refreshSubscribers: ((error: any) => void)[] = [];
 
-// Helper: Add a request to the queue
+// Add a request to the queue
 const subscribeTokenRefresh = (cb: (error: any) => void) => {
     refreshSubscribers.push(cb);
 };
 
 //  Process the queue when refresh finishes
-const onRefreshed = (error: any) => {
+const onRefreshed = (error:any) => {
     refreshSubscribers.forEach((cb) => cb(error));
     refreshSubscribers = []; // Clear the queue
 };
@@ -61,14 +61,11 @@ client.interceptors.response.use(
                 }
             }
 
-            // A refresh is already in progress. Wait in the queue.
-            // We return a new Promise that resolves ONLY when `onRefreshed` is called.
             return new Promise((resolve, reject) => {
                 subscribeTokenRefresh((err: any) => {
                     if (err) {
-                        reject(err); // Refresh failed, reject this request too
+                        reject(err); 
                     } else {
-                        // Refresh succeeded! Retry this specific request
                         resolve(client(originalRequest));
                     }
                 });
