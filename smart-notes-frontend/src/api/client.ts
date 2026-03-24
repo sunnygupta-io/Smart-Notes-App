@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
+
 
 const client = axios.create({
     baseURL: 'http://localhost:8000/api',
@@ -56,6 +58,7 @@ client.interceptors.response.use(
                     isRefreshing = false;
                     // Tell all waiting requests in the queue to fail
                     onRefreshed(refreshError); 
+                    useAuthStore.getState().logout();
                     redirectToLogin();
                     return Promise.reject(refreshError);
                 }

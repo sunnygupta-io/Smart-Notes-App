@@ -1,6 +1,8 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./AuthContext";
+// import { AuthProvider } from "./AuthContext";
+import { useEffect } from "react";
+import { useAuthStore } from "./store/authStore";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -16,8 +18,24 @@ import SharedNotes from "./pages/SharedNotes";
 import GoogleCallback from "./pages/GoogleCallback";
 
 const App = () => {
+
+  const checkAuth =useAuthStore((state)=> state.checkAuth);
+  const isLoading = useAuthStore((state)=> state.isLoading);
+
+  useEffect(()=>{
+    checkAuth();
+  },[checkAuth]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="h-12 w-12 animate-spin border-r-2 border-b-2 border-t-blue-600 border-l-blue-600 rounded-full"></div>
+      </div>
+    );
+  }
+  
   return (
-    <AuthProvider>
+    // <AuthProvider>
       <BrowserRouter>
         <Navbar />
         <Routes>
@@ -83,7 +101,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+    // </AuthProvider>
   );
 };
 

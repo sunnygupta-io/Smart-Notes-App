@@ -497,6 +497,41 @@ The `/api/admin/stats` endpoint returns a snapshot of the entire platform:
 
 ---
 
+### 🧪 Testing
+The backend includes a comprehensive automated test suite powered by Pytest. These tests ensure that the API logic, authentication flow, and database constraints remain stable as the codebase grows.
+
+## Test Coverage
+- Authentication: Registration, login, token refresh rotation, and protected route access.
+- Notes CRUD: Full lifecycle of a note (Create, Read, Update, Delete) with strict ownership checks.
+- Tags: Creation of global tags and association logic with notes.
+- Permissions: Verification of the sharing system (e.g., ensuring a user with view permission cannot perform an edit action).
+- Admin Security: Validating that admin-only endpoints reject non-admin users.
+
+## Running Tests
+To run the test suite, ensure your virtual environment is active and use the following commands:
+
+Bash
+```json
+cd smart-notes-backend
+```
+
+# Run all tests
+```json
+pytest
+```
+
+# Run tests with detailed output (verbose)
+```json
+pytest -v
+```
+
+## Test Configuration
+- The tests are designed to be isolated and repeatable:
+- Isolated Database: Uses a separate test database initialized via conftest.py to prevent data loss in development.
+- Async Testing: Utilizes httpx for testing FastAPI's endpoints efficiently.
+- Clean Slate: Database tables are managed securely during test execution to ensure consistency across test runs.
+
+
 ## Future Work
 
 These features were intentionally left out to keep the project simple but can be added later without breaking any existing code:
@@ -511,8 +546,6 @@ These features were intentionally left out to keep the project simple but can be
 | File attachments | Add S3 or Cloudflare R2 file uploads |
 | Rate limiting | Add slowapi to prevent brute-force on auth endpoints |
 | Redis token blocklist | Instantly invalidate access tokens on logout |
-| Docker setup | Containerize backend + frontend + PostgreSQL with docker-compose |
-| Tests | pytest for backend, Vitest + React Testing Library for frontend |
 | Drag to reorder | Let users reorder notes on the dashboard |
 
 ---
