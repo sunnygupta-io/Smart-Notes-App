@@ -85,6 +85,7 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 | React 18 | UI library |
 | TypeScript | Type safety |
 | Vite | Build tool |
+| Zustand | Global state management |
 | Tailwind CSS v4 | Styling |
 | React Router v6 | Client-side routing |
 | Axios | HTTP client |
@@ -93,7 +94,7 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 
 ## Project Structure
 
-```
+```text
 smart-notes/
 │
 ├── smart-notes-backend/
@@ -102,8 +103,7 @@ smart-notes/
 │   │   │
 │   │   ├── core/                       # Core configurations
 │   │   │   ├── __init__.py
-│   │   │   ├── config.py               # Settings from .env
-│   │   │   └── auth.py                 # JWT, password hashing, dependencies
+│   │   │   └── config.py                 # Settings from .env   
 │   │   │
 │   │   ├── db/                         # Database setup
 │   │   │   ├── __init__.py
@@ -132,7 +132,8 @@ smart-notes/
 │   │   │
 │   │   ├── utils/                      # Helper functions
 │   │   │   ├── __init__.py
-│   │   │   └── helper.py
+│   │   │   ├── auth.py
+│   │   │   └── helper.py               # JWT, password hashing, dependencies
 │   │   │
 │   │   └── main.py                     # FastAPI entry point
 │   │
@@ -142,7 +143,7 @@ smart-notes/
 │   │   │   └── xxxx_add_refresh_token_to_users.py
 │   │   └── env.py
 │   │
-│   ├── tests/                        # Database migrations
+│   ├── tests/                          # Database migrations
 │   │   ├── conftest.py
 │   │   ├── test_admin.py
 │   │   ├── test_notes.py
@@ -169,8 +170,8 @@ smart-notes/
     │   ├── components/
     │   │   ├── Navbar.tsx              # Top nav with unread badge
     │   │   └── ProtectedRoute.tsx      # Auth + admin guard
-    │   ├── hooks/
-    │   │   └── useAuth.ts              # Auth context shortcut
+    │   ├── store/
+    │   │   └── useAuthStore.ts         # Zustand global auth state
     │   ├── pages/
     │   │   ├── Login.tsx
     │   │   ├── Register.tsx
@@ -183,14 +184,12 @@ smart-notes/
     │   ├── types/
     │   │   └── index.ts                # TypeScript interfaces
     │   ├── App.tsx                     # Routes
-    │   ├── AuthContext.tsx             # Global auth state
     │   └── main.tsx                    # Entry point
     ├── .env
     ├── index.html
     ├── package.json
     ├── tsconfig.json
     └── vite.config.ts
-```
 
 ---
 
@@ -539,6 +538,7 @@ pytest -v
 - Async Testing: Utilizes httpx for testing FastAPI's endpoints efficiently.
 - Clean Slate: Database tables are managed securely during test execution to ensure consistency across test runs.
 
+---
 
 ## Future Work
 
