@@ -142,6 +142,15 @@ smart-notes/
 │   │   │   └── xxxx_add_refresh_token_to_users.py
 │   │   └── env.py
 │   │
+│   ├── tests/                        # Database migrations
+│   │   ├── conftest.py
+│   │   ├── test_admin.py
+│   │   ├── test_notes.py
+│   │   ├── test_notifications.py
+│   │   ├── test_share.py
+│   │   ├── test_tags.py
+│   │   └── test_users.py
+│   │
 │   ├── .env                            # Environment variables
 │   ├── alembic.ini
 │   ├── requirements.txt
@@ -510,7 +519,6 @@ The backend includes a comprehensive automated test suite powered by Pytest. The
 ### Running Tests
 To run the test suite, ensure your virtual environment is active and use the following commands:
 
-Bash
 ```json
 cd smart-notes-backend
 ```
