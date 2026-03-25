@@ -92,9 +92,8 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 ### Users
 - Register and login with email + password
 - Login with Google OAuth
-- **Secure Authentication:** JWTs are stored exclusively in `HttpOnly` cookies to prevent XSS attacks.
-- **Optimized Refresh Flow:** Axios interceptor queue prevents race conditions by pausing concurrent failed requests and grouping them into a single token refresh call.
-- Change password
+- Secure Authentication: JWTs are stored exclusively in `HttpOnly` cookies to prevent XSS attacks.
+- Optimized Refresh Flow: Axios interceptor queue prevents race conditions by pausing concurrent failed requests and grouping them into a single token refresh call.
 - Logout (invalidates refresh token server-side and clears cookies)
 
 ### Notes
@@ -285,15 +284,13 @@ smart-notes/
 cd smart-notes-backend
 ```
 
-##### Create and activate virtual environment
+#### Create and activate virtual environment
 ```bash
 python -m venv venv
-```
-```
-# source venv/bin/activate        # Mac/Linux
+source venv/bin/activate        # Mac/Linux
 venv\Scripts\activate         # Windows
 ```
-##### Install dependencies
+#### Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
@@ -316,8 +313,8 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-Backend runs at: `http://localhost:8000`
-API docs at: `http://localhost:8000/docs`
+- Backend runs at: `http://localhost:8000`
+- API docs at: `http://localhost:8000/docs`
 
 ### 5. Frontend setup
 
@@ -626,7 +623,7 @@ These features were intentionally left out to keep the project simple but can be
 
 | Feature | Description |
 |---|---|
-| Change Password | Allow a user or admin to change password |
+| Change Password | Allow a user or admin to change password(Not implemented in UI)|
 | Rich text editor | Replace the plain textarea with TipTap or Quill |
 | WebSocket notifications | Replace polling with real-time notifications |
 | Rate limiting | Add slowapi to prevent brute-force on auth endpoints |
