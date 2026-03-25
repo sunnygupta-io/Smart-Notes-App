@@ -293,9 +293,7 @@ pip install -r requirements.txt
 
 ```bash
 # Create the database in PostgreSQL
-psql -U postgres
 CREATE DATABASE smartnotes;
-\q
 
 # Run migrations
 alembic upgrade head
@@ -495,8 +493,8 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 
 For enhanced security against Cross-Site Scripting (XSS) attacks, this application does not store tokens in `localStorage` or memory. Instead, it relies on a secure, backend-driven cookie system:
 
-**Access token** — Short-lived JWT (15 minutes). Sent automatically by the browser via `HttpOnly` cookies on every API request.
-**Refresh token** — Long-lived random string. Stored hashed in the database and sent as an `HttpOnly` cookie.
+- **Access token**: Short-lived JWT (15 minutes). Sent automatically by the browser via `HttpOnly` cookies on every API request.
+- **Refresh token**: Long-lived random string. Stored hashed in the database and sent as an `HttpOnly` cookie.
 
 *Note: The frontend Axios client uses `withCredentials: true` to ensure cookies are automatically attached to all cross-origin requests.*
 
