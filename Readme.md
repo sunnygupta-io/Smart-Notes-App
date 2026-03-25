@@ -79,12 +79,6 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 </div>
 <br />
 
-#### CreateNote
-<div align="center">
-  <img src="./assets/CreateNote.png" alt="CreateNote" width="800" />
-</div>
-<br />
-
 ---
 
 ## Features
@@ -332,7 +326,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at: `http://localhost:5173`
+- Frontend runs at: `http://localhost:5173`
 
 ---
 
@@ -341,21 +335,20 @@ Frontend runs at: `http://localhost:5173`
 ### backend/.env
 
 ```env
-# PostgreSQL connection string
 DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/smartnotes
 
-# JWT secret key — use a long random string in production
 SECRET_KEY=your-super-secret-key-change-this-in-production
-
-# JWT algorithm
 ALGORITHM=HS256
-
-# Access token expiry in minutes (15 recommended)
 ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# Google OAuth credentials (from Google Cloud Console)
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+REDIRECT_URI = "http://localhost:8000/api/users/google/callback"
 ```
 
 ---
