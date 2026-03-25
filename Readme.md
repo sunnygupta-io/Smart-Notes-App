@@ -533,9 +533,9 @@ If the refresh token is also expired or invalid, the queue rejects all requests,
 
 | Permission | Can read | Can edit title/content/tags | Can archive | Can delete |
 |---|---|---|---|---|
-| `view` | ✅ | ❌ | ❌ | ❌ |
-| `edit` | ✅ | ✅ | ❌ | ❌ |
-| Owner | ✅ | ✅ | ✅ | ✅ |
+| `view` | True | False | False | False |
+| `edit` | True | True | False | False |
+| Owner | True | True | True | True |
 
 ### Notification Triggers
 
