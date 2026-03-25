@@ -20,7 +20,6 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 - [Environment Variables](#environment-variables)
 - [Database Setup](#database-setup)
 - [API Reference](#api-reference)
-- [Frontend Pages](#frontend-pages)
 - [Authentication](#authentication)
 - [Sharing & Notifications](#sharing--notifications)
 - [Admin Panel](#admin-panel)
@@ -30,6 +29,18 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 ---
 
 ## Application Showcase
+
+#### Login
+<div align="center">
+  <img src="./assets/Login.png" alt="Login" width="800" />
+</div>
+<br />
+
+#### Register
+<div align="center">
+  <img src="./assets/Register.png" alt="Register" width="800" />
+</div>
+<br />
 
 #### NoteEditor
 <div align="center">
@@ -281,7 +292,7 @@ cd smart-notes-backend
 #### Create and activate virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate        # Mac/Linux
+source venv/bin/activate      # Mac/Linux
 venv\Scripts\activate         # Windows
 ```
 #### Install dependencies
