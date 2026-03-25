@@ -156,7 +156,7 @@ def search_note(
     )
 
 
-    total_pages = (total + page_size -1)// page_size
+    total_pages = (total + page_size -1)// page_size if total> 0 else 0
     logger.info(
         f"Search result: user_id={current_user.id} "
         f"total={total} page={page}/{total_pages}"

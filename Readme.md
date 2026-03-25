@@ -657,7 +657,10 @@ ENDPOINT GET /api/notes/search:
         TAKE page_size
         
     SET final_notes = EXECUTE(QUERY)
-    SET calculated_total_pages = INTEGER_DIVIDE((total_matches + page_size - 1), page_size)
+    IF total_matches > 0:
+        SET calculated_total_pages = INTEGER_DIVIDE((total_matches + page_size - 1), page_size)
+    ELSE:
+        SET calculated_total_pages = 0
     
     RETURN 200 OK:
         {
@@ -669,9 +672,9 @@ ENDPOINT GET /api/notes/search:
         }
 ```
 
-### 4. Update Note workflow
+### 4. Update Note workflow (`PUT /api/notes/{id}`)
 
-### Authorization & Safe Updates
+#### Authorization & Safe Updates
 - Checks if the user is owner or has edit access
 - Only allows update if user has permission
 - Supports updating only the fields that are provided
@@ -712,6 +715,180 @@ ENDPOINT PUT /api/notes/{id}:
         LOG notification_error
         
     RETURN 200 OK (note)
+```
+
+### 5. Create Note workflow (`POST /api/notes/`)
+
+#### Data Ownership & Tag Handling
+
+- Gets owner_id securely from the JWT token
+- Ensures users can only access their own data
+- Handles tags using a many-to-many relationship
+- Validates tag IDs before linking
+- Ignores invalid tags and logs a warning
+- Saves the note successfully without breaking the flow
+
+#### Backend API Logic Flow (FastAPI)
+
+```text
+ENDPOINT POST /api/notes/:
+    REQUIRE AuthToken -> Extract current_user
+    RECEIVE payload: { title, content, tag_ids }
+    
+    SET new_note = INITIALIZE Note:
+        title = payload.title
+        content = payload.content
+        owner_id = current_user.id
+        is_archived = FALSE
+        
+    IF payload.tag_ids IS NOT EMPTY:
+        FETCH valid_tags FROM database WHERE id IN payload.tag_ids
+        
+        IF COUNT(valid_tags) != COUNT(payload.tag_ids):
+            SET missing_tags = payload.tag_ids MINUS valid_tags.ids
+            LOG WARNING "Tag IDs not found: " + missing_tags
+            
+        SET new_note.tags = valid_tags
+        
+    SAVE new_note TO database
+    COMMIT database transaction
+    REFRESH new_note state
+    
+    RETURN 201 Created (new_note)
+  
+```
+
+### 6. List All Users  (`GET /api/admin/users`)
+
+#### Admin Access & Efficient Data Fetching
+
+- Only admin users can access this endpoint (RBAC check)
+- Permission is verified before any database operation
+- Uses dynamic query building for filtering and pagination
+- Handles large data efficiently
+- Ensures fast and secure loading of admin dashboard
+
+#### Backend API Logic Flow (FastAPI + SQLAlchemy)
+
+```text
+ENDPOINT GET /api/admin/users:
+    REQUIRE AuthToken -> Extract current_user
+    VERIFY current_user.role == "admin" ELSE THROW 401 Unauthorized
+    
+    QUERY = SELECT * FROM users
+    
+    IF is_active EXISTS:
+        APPEND TO QUERY: WHERE is_active == is_active
+        
+    IF role EXISTS:
+        IF role NOT IN ["user", "admin"]:
+            THROW 400 Bad Request
+        APPEND TO QUERY: WHERE role == role
+        
+    SET total_matches = EXECUTE COUNT(QUERY)
+    
+    SET offset = (page - 1) * page_size
+    
+    APPEND TO QUERY:
+        ORDER BY created_at DESCENDING
+        SKIP offset
+        TAKE page_size
+        
+    SET final_users = EXECUTE(QUERY)
+    
+    IF total_matches > 0:
+        SET calculated_total_pages = INTEGER_DIVIDE((total_matches + page_size - 1), page_size)
+    ELSE:
+        SET calculated_total_pages = 0
+        
+    RETURN 200 OK:
+        {
+            "total": total_matches,
+            "page": current_page,
+            "page_size": page_size,
+            "total_pages": calculated_total_pages,
+            "items": final_users
+        }
+
+```
+
+### 7. Platform Stats workflow (`GET /api/admin/stats`)
+
+#### Admin Dashboard Stats
+
+- Acts as a central place to get platform statistics
+- Runs fast `COUNT` queries on multiple tables (users, notes, tags, etc.)
+- Does not return full data, only aggregated numbers
+- Combines all counts into a structured JSON response
+- Gives a quick overview of system usage and health
+
+#### Backend API Logic Flow (FastAPI + SQLAlchemy)
+
+```text
+ENDPOINT GET /api/admin/stats:
+    REQUIRE AuthToken -> Extract current_user
+    VERIFY current_user.role == "admin" ELSE THROW 401 Unauthorized
+    
+    COUNT total_users FROM users
+    COUNT active_users FROM users WHERE is_active IS TRUE
+    COUNT inactive_users FROM users WHERE is_active IS FALSE
+    
+    COUNT total_notes FROM notes
+    COUNT archived_notes FROM notes WHERE is_archived IS TRUE
+    SET active_notes = (total_notes - archived_notes)
+    
+    COUNT total_tags FROM tags
+    COUNT total_shares FROM shared_notes
+    
+    COUNT unread_notifs FROM notifications WHERE is_read IS FALSE
+    
+    RETURN 200 OK:
+        {
+            "users": { "total", "active", "inactive" },
+            "notes": { "total", "archived", "active" },
+            "tags": total_tags,
+            "active_shares": total_shares,
+            "unread_notifications": unread_notifs
+        }
+```
+
+### 8. Refresh Token workflow (`GET /api/admin/stats`)
+
+#### Refresh Token Rotation
+
+- Generates a new access token when the old one expires
+- Also creates a new refresh token each time
+- Old refresh token is invalidated (no longer usable)
+- Prevents session hijacking if a token is stolen
+- Ensures better security for user sessions
+
+#### Backend API Logic Flow (FastAPI)
+
+```text
+ENDPOINT POST /api/users/refresh:
+    EXTRACT refresh_token FROM Request Cookies
+    IF refresh_token IS MISSING -> THROW 401 Unauthorized
+    
+    FETCH all active users with non-null refresh tokens
+    
+    FOR EACH user IN active_users:
+        IF verify_bcrypt(refresh_token, user.hashed_refresh_token) IS TRUE:
+            SET matched_user = user
+            BREAK LOOP
+            
+    IF matched_user IS NULL:
+        THROW 401 Unauthorized ("Invalid or expired refresh token")
+        
+    SET new_access_token = CREATE_JWT(user_id=matched_user.id)
+    SET new_plain_refresh_token = GENERATE_SECURE_RANDOM_STRING()
+    
+    UPDATE matched_user SET refresh_token = hash_bcrypt(new_plain_refresh_token)
+    SAVE database
+    
+    ATTACH_COOKIE(name="access_token", value=new_access_token, HttpOnly=True)
+    ATTACH_COOKIE(name="refresh_token", value=new_plain_refresh_token, HttpOnly=True)
+    
+    RETURN 200 OK ("Tokens refreshed")
 ```
 
 ---
@@ -785,20 +962,6 @@ If the refresh token is also expired or invalid, the queue rejects all requests,
 - Admin cannot deactivate, delete, or modify other admin accounts
 - Admin cannot deactivate or delete their own account
 - Deleting a user permanently removes all their notes, notifications, and share records (cascade)
-
-### Platform Stats
-
-The `/api/admin/stats` endpoint returns a snapshot of the entire platform:
-
-```json
-{
-  "users": { "total": 10, "active": 8, "inactive": 2 },
-  "notes": { "total": 45, "archived": 5, "active": 40 },
-  "tags": 12,
-  "active_shares": 7,
-  "unread_notifications": 3
-}
-```
 
 ---
 
