@@ -31,51 +31,57 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 
 ## Application Showcase
 
-### NoteEditor
+#### NoteEditor
 <div align="center">
   <img src="./assets/NoteEditor.png" alt="NoteEditor" width="800" />
 </div>
 <br />
 
-### Tags
+#### Tags
 <div align="center">
-  <img src="./assets/Tag.png" alt="Share" width="800" />
+  <img src="./assets/Tag.png" alt="Tag" width="800" />
 </div>
 <br />
 
-### Share
+#### Share
 <div align="center">
   <img src="./assets/Share.png" alt="Share" width="800" />
 </div>
 <br />
 
-### ShareWithMe
+#### ShareWithMe
 <div align="center">
   <img src="./assets/ShareWithMe.png" alt="ShareWithMe" width="800" />
 </div>
 <br />
 
-### Notifications
+#### Notifications
 <div align="center">
   <img src="./assets/Notifications.png" alt="Notifications" width="800" />
 </div>
 <br />
 
-### AdminPanel
+#### AdminPanel
 <div align="center">
   <img src="./assets/AdminPanel.png" alt="AdminPanel" width="800" />
 </div>
 <br />
 
-### NoteEditor
+#### AdminNotesView
 <div align="center">
-  <img src="./assets/NoteEditor.png" alt="Notifications" width="800" />
+  <img src="./assets/AdminNotesView.png" alt="AdminNotesView" width="800" />
 </div>
 <br />
 
-### CreateNote
+#### NoteEditor
 <div align="center">
-  <img src="./assets/CreateNote.png" alt="AdminPanel" width="800" />
+  <img src="./assets/NoteEditor.png" alt="NoteEditor" width="800" />
+</div>
+<br />
+
+#### CreateNote
+<div align="center">
+  <img src="./assets/CreateNote.png" alt="CreateNote" width="800" />
 </div>
 <br />
 
