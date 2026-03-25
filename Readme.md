@@ -265,7 +265,9 @@ smart-notes/
     ├── tsconfig.json
     └── vite.config.ts
 
+```
 ---
+
 
 ## Getting Started
 
@@ -283,16 +285,15 @@ smart-notes/
 cd smart-notes-backend
 ```
 
-# Create and activate virtual environment
+##### Create and activate virtual environment
 ```bash
 python -m venv venv
 ```
-
 ```
 # source venv/bin/activate        # Mac/Linux
 venv\Scripts\activate         # Windows
 ```
-# Install dependencies
+##### Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
