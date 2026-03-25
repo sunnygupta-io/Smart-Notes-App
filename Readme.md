@@ -220,8 +220,7 @@ smart-notes/
 │   │
 │   ├── .env                            # Environment variables
 │   ├── alembic.ini
-│   ├── requirements.txt
-│   └── README.md (optional backend-specific)
+│   └── requirements.txt
 │
 └── smart-notes-frontend/
     ├── src/
@@ -244,6 +243,8 @@ smart-notes/
     │   │   └── ProtectedRoute.tsx      # Auth + admin guard
     │   ├── store/
     │   │   └── useAuthStore.ts         # Zustand global auth state
+    │   ├── hooks/
+    │   │   └── useAuth.ts              # helper hook
     │   ├── pages/
     │   │   ├── Login.tsx
     │   │   ├── Register.tsx
@@ -256,6 +257,7 @@ smart-notes/
     │   ├── types/
     │   │   └── index.ts                # TypeScript interfaces
     │   ├── App.tsx                     # Routes
+    │   ├── index.css                   # Css file
     │   └── main.tsx                    # Entry point
     ├── .env
     ├── index.html
@@ -267,11 +269,11 @@ smart-notes/
 
 ## Getting Started
 
-### Prerequisites
+### 1. Prerequisites
 
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL 14+
+- Python
+- Node.js
+- PostgreSQL
 
 
 
@@ -279,15 +281,21 @@ smart-notes/
 
 ```bash
 cd smart-notes-backend
+```
 
 # Create and activate virtual environment
+```bash
 python -m venv venv
+```
+
+```
 # source venv/bin/activate        # Mac/Linux
 venv\Scripts\activate         # Windows
-
+```
 # Install dependencies
+```bash
 pip install -r requirements.txt
-
+```
 
 ### 3. Database setup
 
@@ -318,8 +326,6 @@ cd smart-notes-frontend
 # Install dependencies
 npm install
 
-# Copy and fill in environment variables
-cp .env.example .env
 ```
 
 ### 6. Start the frontend
