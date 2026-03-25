@@ -517,7 +517,6 @@ ENDPOINT POST /api/users/login:
    
     RECEIVE payload: {email, password}
 
-    // validation and security check
     FIND user IN database WHERE user.email == payload.email
 
     IF user NOT FOUND OR verify_bcrypt(payload.password, user.password_hash) IS FALSE:
@@ -526,11 +525,9 @@ ENDPOINT POST /api/users/login:
     IF user.is_active IS FALSE:
          THROW 403 Forbidden ("Account deactivated")
 
-    // Token generation
     SET access_token = CREATE_JWT(payload={user_id}, expiry=15_minutes)
     SET plain_refresh_token = GENERATE_SECURE_RANDOM_STRING()
 
-    // save hashed refresh token in DB for future rotation/revocation
     UPDATE user SET refresh_token = hash_bcrypt(plain_refresh_token)
 
     ATTACH_COOKIE(name="access_token", value=access_token, HttpOnly=True, SameSite="Lax")
@@ -547,10 +544,8 @@ COMPONENT LoginUI:
       SET isLoading = TRUE
 
       TRY: 
-          // browser automatically stores the HttpOnly cookies
           AWAIT api.post('users/login', {email, password})
 
-          // Calls '/users/me' to get user details
           AWAIT authStore.login()
 
           SET globalState.user = Fetched_User_Profile
@@ -576,18 +571,15 @@ COMPONENT LoginUI:
 #### Interceptor Pseudo-code Flow
 
 ```text
-// Global State
 SET isRefreshing = FALSE
-SET requestQueue = []  // Array of callbacks waiting for the new token
+SET requestQueue = []  
 
 ON API ERROR RESPONSE (error):
     SET originalRequest = error.config
     
-    // Check if the error is due to an expired token
     IF error.status == 401 AND originalRequest._retry IS FALSE AND endpoint IS NOT auth:
         SET originalRequest._retry = TRUE
         
-        // If a refresh is ALREADY in progress
         IF isRefreshing IS TRUE:
             RETURN NEW PROMISE:
                 ADD callback TO requestQueue
@@ -596,33 +588,26 @@ ON API ERROR RESPONSE (error):
                     IF err EXISTS -> REJECT promise
                     ELSE -> RETRY originalRequest AND RESOLVE
                     
-        // If this is the FIRST request to fail
         IF isRefreshing IS FALSE:
             SET isRefreshing = TRUE
             
             TRY:
-                // Attempt to swap the HttpOnly refresh cookie for a new pair
                 AWAIT api.post("/users/refresh", withCredentials=TRUE)
                 
-                // Success: Process the queue and let waiting requests proceed
                 SET isRefreshing = FALSE
                 FOR EACH callback IN requestQueue:
                     TRIGGER callback(null)
                 CLEAR requestQueue
                 
-                // Retry the original request that triggered the refresh
                 RETURN RETRY originalRequest
                 
             CATCH refreshError:
-                // Failure: The refresh token itself is expired or invalid
                 SET isRefreshing = FALSE
                 
-                // Tell all waiting requests in the queue to fail
                 FOR EACH callback IN requestQueue:
                     TRIGGER callback(refreshError)
                 CLEAR requestQueue
                 
-                // Send them to login page
                 TRIGGER globalAuthStore.logout()
                 REDIRECT TO "/login"
                 
