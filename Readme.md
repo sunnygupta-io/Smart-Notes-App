@@ -501,7 +501,7 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 
 ## API Workflows
 
-### 1. Secure User Login workflow (`POST /api/users/login`)
+### 1. Secure User Login workflow (POST `/api/users/login`)
 
 #### Authentication Architecture
 
@@ -616,7 +616,7 @@ ON API ERROR RESPONSE (error):
     RETURN REJECT error
 ```
 
-### 3. Search Notes workflow (`GET /api/notes/search`)
+### 3. Search Notes workflow (GET `/api/notes/search`)
 
 - Backend builds SQL queries dynamically based on URL parameters
 - Filtering is done directly in the database (not in memory)
@@ -672,7 +672,7 @@ ENDPOINT GET /api/notes/search:
         }
 ```
 
-### 4. Update Note workflow (`PUT /api/notes/{id}`)
+### 4. Update Note workflow (PUT `/api/notes/{id}`)
 
 #### Authorization & Safe Updates
 - Checks if the user is owner or has edit access
@@ -717,7 +717,7 @@ ENDPOINT PUT /api/notes/{id}:
     RETURN 200 OK (note)
 ```
 
-### 5. Create Note workflow (`POST /api/notes/`)
+### 5. Create Note workflow (POST `/api/notes/`)
 
 #### Data Ownership & Tag Handling
 
@@ -758,7 +758,7 @@ ENDPOINT POST /api/notes/:
   
 ```
 
-### 6. List All Users  (`GET /api/admin/users`)
+### 6. List All Users  (GET `/api/admin/users`)
 
 #### Admin Access & Efficient Data Fetching
 
@@ -812,7 +812,7 @@ ENDPOINT GET /api/admin/users:
 
 ```
 
-### 7. Platform Stats workflow (`GET /api/admin/stats`)
+### 7. Platform Stats workflow (GET `/api/admin/stats`)
 
 #### Admin Dashboard Stats
 
@@ -852,7 +852,7 @@ ENDPOINT GET /api/admin/stats:
         }
 ```
 
-### 8. Refresh Token workflow (`GET /api/admin/stats`)
+### 8. Refresh Token workflow (POST `/api/users/refresh`)
 
 #### Refresh Token Rotation
 
@@ -889,6 +889,252 @@ ENDPOINT POST /api/users/refresh:
     ATTACH_COOKIE(name="refresh_token", value=new_plain_refresh_token, HttpOnly=True)
     
     RETURN 200 OK ("Tokens refreshed")
+```
+
+### 9. Google OAuth2 Authentication workflow (GET `/google/login` & `/google/callback`)
+
+#### Google OAuth Login Flow
+
+- Uses Google to handle user login (no passwords stored in our system)
+- User is redirected to Google for authentication
+- After success, backend handles the callback
+- Automatically registers new users or logs in existing ones
+- Creates a session using secure HttpOnly cookies
+- Connects Google account with internal user system
+
+#### Google Authentication Logic Flow
+
+```text
+STEP 1: USER INITIATION (GET /google/login)
+    CONSTRUCT Google Authorization URL with:
+        - Client ID & Redirect URI
+        - Scopes: "openid", "email", "profile"
+        - Response Type: "code"
+    URL_ENCODE parameters for safety
+    REDIRECT user to Google's Consent Screen
+
+STEP 2: GOOGLE HANDSHAKE (User provides consent)
+    GOOGLE REDIRECTS user back to /google/callback?code=AUTH_CODE
+
+STEP 3: TOKEN EXCHANGE (Server-to-Server)
+    EXTRACT AUTH_CODE from URL
+    REQUEST token from Google (POST settings.GOOGLE_TOKEN_URL)
+    IF Exchange Fails -> THROW 400 Bad Request
+    RECEIVE access_token from Google
+
+STEP 4: IDENTITY RETRIEVAL
+    REQUEST user profile from Google using the access_token
+    IF Retrieval Fails -> THROW 400 Bad Request
+    EXTRACT email and verified_status
+    IF email NOT verified -> THROW 400 Bad Request
+
+STEP 5: JIT PROVISIONING & SESSION MAPPING
+    SEARCH database for User by email
+    
+    IF User NOT FOUND:
+        CREATE new User (email, role="user", active=TRUE)
+        SAVE to database
+        LOG "New user via Google OAuth"
+    
+    ELSE (User EXISTS):
+        IF user.is_active IS FALSE -> THROW 403 Forbidden
+        LOG "Existing user login"
+
+STEP 6: SESSION FINALIZATION
+    GENERATE internal JWT access_token and refresh_token
+    SET HttpOnly Cookies with internal tokens
+    REDIRECT user to Frontend Dashboard
+```
+### 10. Add Tag to Note workflow (POST `/api/notes/{id}/tags/{id}`)
+
+#### Notes & Tags
+
+- Checks ownership before linking
+- Avoids duplicate relations
+- Returns success if already linked
+- Keeps data clean and efficient
+
+#### Backend API Logic Flow (FastAPI)
+```text
+ENDPOINT POST /api/notes/{note_id}/tags/{tag_id}:
+    REQUIRE AuthToken -> Extract current_user
+    
+    FETCH note FROM database WHERE id == note_id
+    IF note NOT FOUND -> THROW 404 Not Found
+    
+    VERIFY (note.owner_id == current_user.id) 
+    ELSE -> THROW 403 Forbidden
+    
+    FETCH tag FROM database WHERE id == tag_id AND owner_id == current_user.id
+    IF tag NOT FOUND -> THROW 404 Not Found
+    
+    IF tag IS ALREADY IN note.tags:
+        LOG "Tag already associated"
+        RETURN 200 OK (note)
+        
+    APPEND tag TO note.tags
+    COMMIT database transaction
+    REFRESH note state
+    
+    LOG "Tag successfully linked to note"
+    RETURN 200 OK (note)
+```
+
+### 11. Note Sharing workflow (POST `/api/share/{note_id}`)
+
+#### Note Sharing
+
+- Prevents sharing with self or admins
+- Uses upsert (create or update share)
+- Updates permissions if already shared
+- Sends notification after sharing
+- Notification failure won’t break the process
+
+#### Backend API Logic Flow (FastAPI)
+
+```text
+ENDPOINT POST /api/share/{note_id}:
+    REQUIRE AuthToken -> Extract current_user
+    RECEIVE payload: { shared_with_email, permission }
+    
+    FETCH note FROM database WHERE id == note_id
+    IF note NOT FOUND -> THROW 404 Not Found
+    
+    VERIFY (note.owner_id == current_user.id) 
+    ELSE -> THROW 403 Forbidden
+    
+    FETCH target_user FROM database WHERE email == payload.shared_with_email
+    IF target_user NOT FOUND -> THROW 404 Not Found
+    
+    IF target_user.id == current_user.id:
+        THROW 400 Bad Request
+        
+    IF target_user.role == "admin":
+        THROW 403 Forbidden
+        
+    FETCH existing_share FROM shared_notes WHERE note_id == note_id AND shared_with == target_user.id
+    
+    IF existing_share EXISTS:
+        SET existing_share.permission = payload.permission
+        COMMIT database transaction
+        SET share_record = existing_share
+    ELSE:
+        CREATE new_share (note_id, target_user.id, payload.permission)
+        SAVE new_share TO database
+        COMMIT database transaction
+        SET share_record = new_share
+        
+    TRY:
+        EXECUTE notify_note_shared(note, target_user, current_user, permission)
+    CATCH notification_error:
+        LOG notification_error
+        
+    RETURN 201 Created (share_record)
+  ```
+### 12. Update Share Permissions Workflow (PATCH `/api/share/{note_id}/users/{user_id}`)
+
+  #### Update Share Permissions
+
+- Only the note owner can change access rights
+- Uses PATCH for small, targeted updates
+- Updates only the required permission field
+- No need to send full data again
+
+#### Backend API Logic Flow (FastAPI)
+
+```text
+ENDPOINT PATCH /api/share/{note_id}/users/{user_id}:
+    REQUIRE AuthToken -> Extract current_user
+    RECEIVE payload: { permission }
+    
+    FETCH note FROM database WHERE id == note_id
+    IF note NOT FOUND -> THROW 404 Not Found
+    
+    VERIFY (note.owner_id == current_user.id) 
+    ELSE -> THROW 403 Forbidden
+    
+    FETCH share_record FROM shared_notes 
+        WHERE note_id == note_id AND shared_with_user_id == user_id
+        
+    IF share_record NOT FOUND:
+        THROW 404 Not Found
+        
+    SET share_record.permission = payload.permission
+    
+    COMMIT database transaction
+    REFRESH share_record state
+    
+    RETURN 200 OK (share_record)
+```
+### 13. Notification Broadcaster workflow
+#### Notifications
+- Decides who gets notified
+- Avoids duplicate notifications
+- Saves all notifications together
+- Faster than saving one by one
+
+#### Business Logic Flow
+
+```text
+FUNCTION notify_shared_users(note, edited_by):
+    SET users_to_notify = EMPTY SET
+    
+    IF note.owner_id IS NOT edited_by.id:
+        ADD note.owner_id TO users_to_notify
+        
+    FETCH shared_entries FROM shared_notes WHERE note_id == note.id
+    
+    FOR EACH share IN shared_entries:
+        IF share.shared_with_user_id IS NOT edited_by.id:
+            ADD share.shared_with_user_id TO users_to_notify
+            
+    IF users_to_notify IS EMPTY:
+        RETURN
+        
+    SET notification_message = "Note '{note.title}' was edited by {edited_by.email}"
+    SET new_notifications = EMPTY LIST
+    
+    FOR EACH user_id IN users_to_notify:
+        CREATE Notification(user_id, notification_message, is_read=FALSE)
+        APPEND TO new_notifications
+        
+    BULK SAVE new_notifications TO database
+    COMMIT database transaction
+```
+### 14. Share Alert Trigger workflow
+#### Notification Helper
+
+- Used in sharing flow  
+- Creates and saves notification  
+- Keeps code clean and reusable  
+
+#### Business Logic Flow
+
+```text
+FUNCTION notify_shared_users(note, edited_by):
+    SET users_to_notify = EMPTY SET
+    
+    IF note.owner_id IS NOT edited_by.id:
+        ADD note.owner_id TO users_to_notify
+        
+    FETCH shared_entries FROM shared_notes WHERE note_id == note.id
+    
+    FOR EACH share IN shared_entries:
+        IF share.shared_with_user_id IS NOT edited_by.id:
+            ADD share.shared_with_user_id TO users_to_notify
+            
+    IF users_to_notify IS EMPTY:
+        RETURN
+        
+    SET notification_message = "Note '{note.title}' was edited by {edited_by.email}"
+    SET new_notifications = EMPTY LIST
+    
+    FOR EACH user_id IN users_to_notify:
+        CREATE Notification(user_id, notification_message, is_read=FALSE)
+        APPEND TO new_notifications
+        
+    BULK SAVE new_notifications TO database
+    COMMIT database transaction
 ```
 
 ---
