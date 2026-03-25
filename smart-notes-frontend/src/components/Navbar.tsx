@@ -10,7 +10,6 @@ export default function Navbar() {
   const location = useLocation()
 
   const [unreadCount, setUnreadCount] = useState(0)
-  // New state to control mobile menu visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export default function Navbar() {
       .catch(() => {})
   }, [user, location.pathname])
 
-  // Close the mobile menu whenever the route changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [location.pathname])
@@ -51,7 +49,6 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Left Side: Branding & Desktop Navigation */}
           <div className="flex items-center gap-8">
             <Link to="/dashboard" className="flex items-center gap-2 group">
               <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-green-800 transition-colors">
@@ -62,7 +59,6 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Links (Hidden on Mobile) */}
             <div className="hidden md:flex items-center gap-1">
               <Link to="/dashboard" className={getLinkClass('/dashboard')}>
                 My Notes
@@ -89,7 +85,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right Side: Desktop User Profile & Actions */}
           <div className="hidden md:flex items-center gap-3">
             <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 text-blue-700 flex items-center justify-center text-sm font-bold border border-blue-200 shadow-sm">

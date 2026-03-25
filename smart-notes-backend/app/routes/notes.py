@@ -70,6 +70,8 @@ def list_notes(
     )
     return notes
 
+
+
 # search notes by title and content
 @router.get("/search", response_model = NoteSearchResponse)
 def search_note(
@@ -169,6 +171,7 @@ def search_note(
     }
 
 
+
 # get notes by id api
 @router.get("/{note_id}", response_model=NoteResponse)
 def get_note(note_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -186,6 +189,8 @@ def get_note(note_id: int, db: Session = Depends(get_db), current_user: User = D
             detail="You don't have access to this note"
         )
     return note
+
+
 
 # update note api
 @router.put("/{note_id}", response_model=NoteResponse)
@@ -225,12 +230,10 @@ def update_note(
     db.refresh(note)
     logger.info(f"Note updated: id={note.id} by user_id={current_user.id}")
 
-    # notification service must be implemented here
     try:
         notify_shared_users(note, current_user, db)
     except Exception as e:
         logger.error(f"Failed to send edit notification: {e}")
-
 
     return note
 

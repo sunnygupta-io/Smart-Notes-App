@@ -85,6 +85,7 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 | React 18 | UI library |
 | TypeScript | Type safety |
 | Vite | Build tool |
+| Zustand | Global state management |
 | Tailwind CSS v4 | Styling |
 | React Router v6 | Client-side routing |
 | Axios | HTTP client |
@@ -93,7 +94,7 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 
 ## Project Structure
 
-```
+```text
 smart-notes/
 │
 ├── smart-notes-backend/
@@ -102,8 +103,7 @@ smart-notes/
 │   │   │
 │   │   ├── core/                       # Core configurations
 │   │   │   ├── __init__.py
-│   │   │   ├── config.py               # Settings from .env
-│   │   │   └── auth.py                 # JWT, password hashing, dependencies
+│   │   │   └── config.py                 # Settings from .env   
 │   │   │
 │   │   ├── db/                         # Database setup
 │   │   │   ├── __init__.py
@@ -132,7 +132,8 @@ smart-notes/
 │   │   │
 │   │   ├── utils/                      # Helper functions
 │   │   │   ├── __init__.py
-│   │   │   └── helper.py
+│   │   │   ├── auth.py
+│   │   │   └── helper.py               # JWT, password hashing, dependencies
 │   │   │
 │   │   └── main.py                     # FastAPI entry point
 │   │
@@ -141,6 +142,15 @@ smart-notes/
 │   │   │   ├── xxxx_create_all_tables.py
 │   │   │   └── xxxx_add_refresh_token_to_users.py
 │   │   └── env.py
+│   │
+│   ├── tests/                          # Database migrations
+│   │   ├── conftest.py
+│   │   ├── test_admin.py
+│   │   ├── test_notes.py
+│   │   ├── test_notifications.py
+│   │   ├── test_share.py
+│   │   ├── test_tags.py
+│   │   └── test_users.py
 │   │
 │   ├── .env                            # Environment variables
 │   ├── alembic.ini
@@ -159,9 +169,15 @@ smart-notes/
     │   │   └── admin.ts
     │   ├── components/
     │   │   ├── Navbar.tsx              # Top nav with unread badge
+    │   │   ├── StatCard.tsx            # stat card component in admin panel     
+    │   │   ├── UserRow.tsx             # show users in row 
+    │   │   ├── NoteCard.tsx            # Note details
+    │   │   ├── NotificationRow.tsx     # Notifications row 
+    │   │   ├── SharedNoteCard.tsx      # Shared note card 
+    │   │   ├── PublicRoute.tsx         # Does not allow logged in user to go to login page without logout
     │   │   └── ProtectedRoute.tsx      # Auth + admin guard
-    │   ├── hooks/
-    │   │   └── useAuth.ts              # Auth context shortcut
+    │   ├── store/
+    │   │   └── useAuthStore.ts         # Zustand global auth state
     │   ├── pages/
     │   │   ├── Login.tsx
     │   │   ├── Register.tsx
@@ -174,14 +190,12 @@ smart-notes/
     │   ├── types/
     │   │   └── index.ts                # TypeScript interfaces
     │   ├── App.tsx                     # Routes
-    │   ├── AuthContext.tsx             # Global auth state
     │   └── main.tsx                    # Entry point
     ├── .env
     ├── index.html
     ├── package.json
     ├── tsconfig.json
     └── vite.config.ts
-```
 
 ---
 
@@ -497,6 +511,41 @@ The `/api/admin/stats` endpoint returns a snapshot of the entire platform:
 
 ---
 
+## 🧪 Testing
+The backend includes a comprehensive automated test suite powered by Pytest. These tests ensure that the API logic, authentication flow, and database constraints remain stable as the codebase grows.
+
+### Test Coverage
+- Authentication: Registration, login, token refresh rotation, and protected route access.
+- Notes CRUD: Full lifecycle of a note (Create, Read, Update, Delete) with strict ownership checks.
+- Tags: Creation of global tags and association logic with notes.
+- Permissions: Verification of the sharing system (e.g., ensuring a user with view permission cannot perform an edit action).
+- Admin Security: Validating that admin-only endpoints reject non-admin users.
+
+### Running Tests
+To run the test suite, ensure your virtual environment is active and use the following commands:
+
+```json
+cd smart-notes-backend
+```
+
+### Run all tests
+```json
+pytest
+```
+
+### Run tests with detailed output (verbose)
+```json
+pytest -v
+```
+
+### Test Configuration
+- The tests are designed to be isolated and repeatable:
+- Isolated Database: Uses a separate test database initialized via conftest.py to prevent data loss in development.
+- Async Testing: Utilizes httpx for testing FastAPI's endpoints efficiently.
+- Clean Slate: Database tables are managed securely during test execution to ensure consistency across test runs.
+
+---
+
 ## Future Work
 
 These features were intentionally left out to keep the project simple but can be added later without breaking any existing code:
@@ -507,12 +556,11 @@ These features were intentionally left out to keep the project simple but can be
 | Email notifications | Send email on share/edit using SendGrid or Resend |
 | WebSocket notifications | Replace polling with real-time notifications |
 | Rich text editor | Replace the plain textarea with TipTap or Quill |
+| Change Password | Allow a user or admin to change password |
 | Note colors | Add a `color` column and let users color-code notes |
 | File attachments | Add S3 or Cloudflare R2 file uploads |
 | Rate limiting | Add slowapi to prevent brute-force on auth endpoints |
 | Redis token blocklist | Instantly invalidate access tokens on logout |
-| Docker setup | Containerize backend + frontend + PostgreSQL with docker-compose |
-| Tests | pytest for backend, Vitest + React Testing Library for frontend |
 | Drag to reorder | Let users reorder notes on the dashboard |
 
 ---

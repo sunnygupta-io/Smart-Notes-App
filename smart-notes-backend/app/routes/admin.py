@@ -70,6 +70,7 @@ def get_user_detail(
     )
     return user
 
+
 # deactive user api [user cannot login but their notes and data preserved]
 @router.patch("/users/{user_id}/deactivate", response_model=AdminUserResponse)
 def deactivate_user(
@@ -106,6 +107,7 @@ def deactivate_user(
     return user
 
 
+
 # reactive user api [user can login not]
 @router.patch("/users/{user_id}/reactivate", response_model=AdminUserResponse)
 def reactivate_user(
@@ -128,6 +130,8 @@ def reactivate_user(
         f"Admin {current_admin.email} reactivated the User: id={user_id} email={user.email}"
     )
     return user
+
+
 
 # get user notes api
 @router.get("/users/{user_id}/notes", response_model=list[NoteResponse])
@@ -159,6 +163,7 @@ def get_user_notes(
     )
 
     return notes
+
 
 
 # delete user permanently

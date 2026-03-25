@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     GOOGLE_TOKEN_URL: str = ""
     GOOGLE_USERINFO_URL: str = ""
     REDIRECT_URI: str = ""
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    REFRESH_TOKEN_EXPIRE_DAYS: str =""
 
     model_config = SettingsConfigDict(env_file=".env")
 

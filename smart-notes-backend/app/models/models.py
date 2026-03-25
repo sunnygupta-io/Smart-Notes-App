@@ -39,6 +39,7 @@ class User(Base):
         
     ) 
 
+# Note table
 class Note(Base):
     __tablename__ = "notes"
 
@@ -55,6 +56,8 @@ class Note(Base):
     tags = relationship("Tag", secondary=note_tags,back_populates= "notes")
     shares = relationship("SharedNote", back_populates="note",  cascade="all, delete-orphan" )
 
+
+# Tag table
 class Tag(Base):
     __tablename__ = "tags"
 
@@ -64,6 +67,8 @@ class Tag(Base):
     
     notes = relationship("Note", secondary=note_tags, back_populates="tags")
 
+
+# SharedNote table
 class SharedNote(Base): 
      
      __tablename__ = "shared_notes"
@@ -78,6 +83,7 @@ class SharedNote(Base):
      shared_with = relationship("User", back_populates="shared_notes")
 
 
+# Notification table
 class Notification(Base):
     __tablename__ = "notifications"
     
