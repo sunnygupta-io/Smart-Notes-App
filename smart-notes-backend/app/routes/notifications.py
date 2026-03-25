@@ -44,6 +44,7 @@ def list_notifications(
     )
     return notifications
 
+
 # get unread message count
 @router.get("/unread-count")
 def get_unread_count(
@@ -55,6 +56,7 @@ def get_unread_count(
         Notification.is_read == False
     ).count()
     return {"unread_count": count}
+
 
 
 # mark_as_read api
@@ -88,6 +90,7 @@ def mark_as_read(
 
     return notification
 
+
 # mark all notification as read
 @router.patch("/read-all", response_model=MessageResponse)
 def mark_all_as_read(db:Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -103,7 +106,7 @@ def mark_all_as_read(db:Session = Depends(get_db), current_user: User = Depends(
 
     return MessageResponse(message=f"{update_count} marked as read")# clear all notification 
 
-
+# clear notification api
 @router.delete("/clear-all", response_model=MessageResponse)
 def clear_all_notification(db:Session= Depends(get_db), current_user: User= Depends(get_current_user)):
     delete_count= db.query(Notification).filter(
@@ -113,6 +116,7 @@ def clear_all_notification(db:Session= Depends(get_db), current_user: User= Depe
     db.commit()
     logger.info(f"All notification cleared by user_id={current_user.id}\n Deleted count = {delete_count} ")
     return MessageResponse(message=f"{delete_count} notifications cleared")
+
 
 # delete one notification api
 @router.delete("/{notification_id}", response_model=MessageResponse)

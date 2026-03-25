@@ -169,6 +169,12 @@ smart-notes/
     │   │   └── admin.ts
     │   ├── components/
     │   │   ├── Navbar.tsx              # Top nav with unread badge
+    │   │   ├── StatCard.tsx            # stat card component in admin panel     
+    │   │   ├── UserRow.tsx             # show users in row 
+    │   │   ├── NoteCard.tsx            # Note details
+    │   │   ├── NotificationRow.tsx     # Notifications row 
+    │   │   ├── SharedNoteCard.tsx      # Shared note card 
+    │   │   ├── PublicRoute.tsx         # Does not allow logged in user to go to login page without logout
     │   │   └── ProtectedRoute.tsx      # Auth + admin guard
     │   ├── store/
     │   │   └── useAuthStore.ts         # Zustand global auth state
@@ -550,6 +556,7 @@ These features were intentionally left out to keep the project simple but can be
 | Email notifications | Send email on share/edit using SendGrid or Resend |
 | WebSocket notifications | Replace polling with real-time notifications |
 | Rich text editor | Replace the plain textarea with TipTap or Quill |
+| Change Password | Allow a user or admin to change password |
 | Note colors | Add a `color` column and let users color-code notes |
 | File attachments | Add S3 or Cloudflare R2 file uploads |
 | Rate limiting | Add slowapi to prevent brute-force on auth endpoints |

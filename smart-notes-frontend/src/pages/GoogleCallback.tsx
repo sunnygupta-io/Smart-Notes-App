@@ -9,15 +9,6 @@ const GoogleCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // const params = new URLSearchParams(window.location.search);
-      // const accessToken = params.get("access_token");
-      // const refreshToken = params.get("refresh_token");
-
-      // if (!accessToken || !refreshToken) {
-      //   setError("Google login failed — no token received");
-      //   return;
-      // }
-
       try {
         await login();
         navigate("/dashboard");

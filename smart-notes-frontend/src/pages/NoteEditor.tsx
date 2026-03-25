@@ -88,6 +88,7 @@ const NoteEditor = () => {
   // Permissions & Access Control
   const isOwner = note ? note.owner_id === user?.id : true;
   const sharedPermission = location.state?.permission; 
+
   // Lock down the editor if they are not the owner and only have 'view' access
   const isReadOnly = !isOwner && sharedPermission === "view";
 
@@ -240,10 +241,10 @@ const NoteEditor = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
-      {/* Top Bar Navigation */}
+
       <div className="flex items-center justify-between mb-8">
         <button
-          onClick={() => navigate(-1)} // Go back to wherever they came from (Dashboard or Shared)
+          onClick={() => navigate(-1)}
           className="group flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
         >
           <span className="mr-2 transform group-hover:-translate-x-1 transition-transform">
@@ -253,6 +254,7 @@ const NoteEditor = () => {
         </button>
 
         <div className="flex items-center gap-3">
+
           {/* Read-Only Badge */}
           {isReadOnly && (
              <span className="bg-gray-100 text-gray-600 border border-gray-200 text-xs font-semibold px-3 py-1.5 rounded-lg mr-2">
@@ -285,7 +287,6 @@ const NoteEditor = () => {
         </div>
       </div>
 
-      {/* Status Messages */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
           {error}

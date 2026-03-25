@@ -1,6 +1,4 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// import { AuthProvider } from "./AuthContext";
 import { useEffect } from "react";
 import { useAuthStore } from "./store/authStore";
 
@@ -35,7 +33,6 @@ const App = () => {
   }
   
   return (
-    // <AuthProvider>
       <BrowserRouter>
         <Navbar />
         <Routes>
@@ -97,11 +94,9 @@ const App = () => {
           />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
-    // </AuthProvider>
   );
 };
 

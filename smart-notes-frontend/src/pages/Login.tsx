@@ -38,7 +38,6 @@ const Login = () => {
           <p className="text-gray-500 text-sm mt-2">Please enter your details to sign in</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
             <span>{error}</span>

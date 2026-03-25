@@ -9,7 +9,6 @@ from app.db.database import get_db
 from app.models.models import Base, User
 from app.utils.auth import get_password_hash
 
-# Use an in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(

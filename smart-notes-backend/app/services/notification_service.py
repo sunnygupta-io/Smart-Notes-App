@@ -5,6 +5,8 @@ from app.schemas.schemas import Permission
 
 logger= logging.getLogger(__name__)
 
+
+# notify shared users on notes changes
 def notify_shared_users(
         note: Note,
         edited_by: User,
@@ -50,7 +52,7 @@ def notify_shared_users(
         f"notified_users={notify_user_ids}"
     )
 
-
+# helper function to notify user that they recieved note
 def notify_note_shared(
         note: Note,
         shared_with: User,
