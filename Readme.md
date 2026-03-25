@@ -516,7 +516,7 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 ENDPOINT POST /api/users/login:
    
     RECEIVE payload: {email, password}
-    
+
     // validation and security check
     FIND user IN database WHERE user.email == payload.email
 
@@ -561,6 +561,74 @@ COMPONENT LoginUI:
 
       FINALLY: 
           SET isLoading = FALSE     
+```
+
+### 2. Axios Interceptor & Concurrent Token Refresh Queue
+
+#### Token Refresh Flow (Axios Interceptor)
+
+- When the access token expires, multiple API calls may fail with `401 Unauthorized`
+- Instead of sending multiple refresh requests, only one refresh call is made
+- Other failed requests are paused in a queue
+- After successful refresh, all queued requests are retried automatically
+- Prevents race conditions and unexpected logouts
+
+#### Interceptor Pseudo-code Flow
+
+```text
+// Global State
+SET isRefreshing = FALSE
+SET requestQueue = []  // Array of callbacks waiting for the new token
+
+ON API ERROR RESPONSE (error):
+    SET originalRequest = error.config
+    
+    // Check if the error is due to an expired token
+    IF error.status == 401 AND originalRequest._retry IS FALSE AND endpoint IS NOT auth:
+        SET originalRequest._retry = TRUE
+        
+        // If a refresh is ALREADY in progress
+        IF isRefreshing IS TRUE:
+            RETURN NEW PROMISE:
+                ADD callback TO requestQueue
+                
+                WHEN callback is triggered (err):
+                    IF err EXISTS -> REJECT promise
+                    ELSE -> RETRY originalRequest AND RESOLVE
+                    
+        // If this is the FIRST request to fail
+        IF isRefreshing IS FALSE:
+            SET isRefreshing = TRUE
+            
+            TRY:
+                // Attempt to swap the HttpOnly refresh cookie for a new pair
+                AWAIT api.post("/users/refresh", withCredentials=TRUE)
+                
+                // Success: Process the queue and let waiting requests proceed
+                SET isRefreshing = FALSE
+                FOR EACH callback IN requestQueue:
+                    TRIGGER callback(null)
+                CLEAR requestQueue
+                
+                // Retry the original request that triggered the refresh
+                RETURN RETRY originalRequest
+                
+            CATCH refreshError:
+                // Failure: The refresh token itself is expired or invalid
+                SET isRefreshing = FALSE
+                
+                // Tell all waiting requests in the queue to fail
+                FOR EACH callback IN requestQueue:
+                    TRIGGER callback(refreshError)
+                CLEAR requestQueue
+                
+                // Send them to login page
+                TRIGGER globalAuthStore.logout()
+                REDIRECT TO "/login"
+                
+                RETURN REJECT refreshError
+                
+    RETURN REJECT error
 ```
 ---
 
