@@ -2,10 +2,17 @@
 
 A full-stack note-taking application inspired by Google Keep and Notion. Users can create, edit, archive, tag, search, and share notes. Shared notes trigger real-time notifications. Admins can manage users and view platform stats.
 
+<br />
+<div align="center">
+  <img src="./assets/Dashboard.png" alt="Smart Notes Dashboard" width="800" />
+</div>
+<br />
+
 ---
 
 ## Table of Contents
 
+- [Application Showcase](#application-showcase)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -19,6 +26,58 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 - [Admin Panel](#admin-panel)
 - [Testing](#testing)
 - [Future Work](#future-work)
+
+---
+
+## Application Showcase
+
+### NoteEditor
+<div align="center">
+  <img src="./assets/NoteEditor.png" alt="NoteEditor" width="800" />
+</div>
+<br />
+
+### Tags
+<div align="center">
+  <img src="./assets/Tag.png" alt="Share" width="800" />
+</div>
+<br />
+
+### Share
+<div align="center">
+  <img src="./assets/Share.png" alt="Share" width="800" />
+</div>
+<br />
+
+### ShareWithMe
+<div align="center">
+  <img src="./assets/ShareWithMe.png" alt="ShareWithMe" width="800" />
+</div>
+<br />
+
+### Notifications
+<div align="center">
+  <img src="./assets/Notifications.png" alt="Notifications" width="800" />
+</div>
+<br />
+
+### AdminPanel
+<div align="center">
+  <img src="./assets/AdminPanel.png" alt="AdminPanel" width="800" />
+</div>
+<br />
+
+### NoteEditor
+<div align="center">
+  <img src="./assets/NoteEditor.png" alt="Notifications" width="800" />
+</div>
+<br />
+
+### CreateNote
+<div align="center">
+  <img src="./assets/CreateNote.png" alt="AdminPanel" width="800" />
+</div>
+<br />
 
 ---
 
