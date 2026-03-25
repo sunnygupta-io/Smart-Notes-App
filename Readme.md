@@ -514,8 +514,9 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 
 ```text
 ENDPOINT POST /api/users/login:
+   
     RECEIVE payload: {email, password}
-
+    
     // validation and security check
     FIND user IN database WHERE user.email == payload.email
 
@@ -532,7 +533,6 @@ ENDPOINT POST /api/users/login:
     // save hashed refresh token in DB for future rotation/revocation
     UPDATE user SET refresh_token = hash_bcrypt(plain_refresh_token)
 
-
     ATTACH_COOKIE(name="access_token", value=access_token, HttpOnly=True, SameSite="Lax")
     ATTACH_COOKIE(name="refresh_token", value=plain_refresh_token, HttpOnly=True, SameSite="Lax")
 
@@ -547,7 +547,6 @@ COMPONENT LoginUI:
       SET isLoading = TRUE
 
       TRY: 
-
           // browser automatically stores the HttpOnly cookies
           AWAIT api.post('users/login', {email, password})
 
