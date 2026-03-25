@@ -615,6 +615,59 @@ ON API ERROR RESPONSE (error):
                 
     RETURN REJECT error
 ```
+
+### 3. Search Notes (`GET /api/notes/search`)
+
+- Backend builds SQL queries dynamically based on URL parameters
+- Filtering is done directly in the database (not in memory)
+- Improves performance and scalability
+- Query is executed only during the pagination step
+- Ensures efficient and optimized data fetching
+
+#### Backend API Logic Flow (FastAPI + SQLAlchemy)
+
+```text
+ENDPOINT GET /api/notes/search:
+    REQUIRE AuthToken -> Extract current_user
+    
+    QUERY = SELECT * FROM notes WHERE owner_id == current_user.id
+    
+    IF keyword EXISTS:
+        APPEND TO QUERY: WHERE (title CONTAINS keyword) OR (content CONTAINS keyword)
+        
+    IF tag_id EXISTS:
+        APPEND TO QUERY: WHERE (note.tags INCLUDES tag_id)
+        
+    IF is_archived EXISTS:
+        APPEND TO QUERY: WHERE (note.is_archived == is_archived)
+        
+    IF date_from EXISTS:
+        APPEND TO QUERY: WHERE (note.created_at >= date_from)
+        
+    IF date_to EXISTS:
+        APPEND TO QUERY: WHERE (note.created_at <= date_to)
+        
+    SET total_matches = EXECUTE COUNT(QUERY)
+    
+    SET offset = (page - 1) * page_size
+    
+    APPEND TO QUERY:
+        ORDER BY created_at DESCENDING
+        SKIP offset
+        TAKE page_size
+        
+    SET final_notes = EXECUTE(QUERY)
+    SET calculated_total_pages = CEIL(total_matches / page_size)
+    
+    RETURN 200 OK:
+        {
+            "total": total_matches,
+            "page": current_page,
+            "page_size": page_size,
+            "total_pages": calculated_total_pages,
+            "items": final_notes
+        }
+```
 ---
 
 ## Authentication
