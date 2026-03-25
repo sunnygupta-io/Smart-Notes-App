@@ -17,6 +17,7 @@ A full-stack note-taking application inspired by Google Keep and Notion. Users c
 - [Authentication](#authentication)
 - [Sharing & Notifications](#sharing--notifications)
 - [Admin Panel](#admin-panel)
+- [Testing](#testing)
 - [Future Work](#future-work)
 
 ---
@@ -409,19 +410,20 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 
 ---
 
-## Frontend Pages
 
-| Route | Page | Access |
+### Frontend Pages & Access Levels
+
+| Route | Page Component | Access Level |
 |---|---|---|
 | `/login` | Login | Public |
 | `/register` | Register | Public |
 | `/auth/google/callback` | Google OAuth handler | Public |
-| `/dashboard` | Notes grid + search + filters | Protected |
-| `/notes/new` | Create note | Protected |
-| `/notes/:id` | Edit note + tags + share | Protected |
-| `/shared` | Notes shared with me | Protected |
-| `/notifications` | Notification list | Protected |
-| `/admin` | Admin panel | Admin only |
+| `/dashboard` | Notes grid + search + filters | Protected (Auth Required) |
+| `/notes/new` | Create note | Protected (Auth Required) |
+| `/notes/:id` | Edit note + tags + share | Protected (Auth Required) |
+| `/shared` | Notes shared with me | Protected (Auth Required) |
+| `/notifications` | Notification list | Protected (Auth Required) |
+| `/admin` | Admin panel | Admin Only |
 
 ---
 
@@ -511,7 +513,7 @@ The `/api/admin/stats` endpoint returns a snapshot of the entire platform:
 
 ---
 
-## 🧪 Testing
+## Testing
 The backend includes a comprehensive automated test suite powered by Pytest. These tests ensure that the API logic, authentication flow, and database constraints remain stable as the codebase grows.
 
 ### Test Coverage
@@ -552,15 +554,10 @@ These features were intentionally left out to keep the project simple but can be
 
 | Feature | Description |
 |---|---|
-| Background tasks | Move notification creation off the request thread using FastAPI `BackgroundTasks` |
-| Email notifications | Send email on share/edit using SendGrid or Resend |
-| WebSocket notifications | Replace polling with real-time notifications |
-| Rich text editor | Replace the plain textarea with TipTap or Quill |
 | Change Password | Allow a user or admin to change password |
-| Note colors | Add a `color` column and let users color-code notes |
-| File attachments | Add S3 or Cloudflare R2 file uploads |
+| Rich text editor | Replace the plain textarea with TipTap or Quill |
+| WebSocket notifications | Replace polling with real-time notifications |
 | Rate limiting | Add slowapi to prevent brute-force on auth endpoints |
 | Redis token blocklist | Instantly invalidate access tokens on logout |
-| Drag to reorder | Let users reorder notes on the dashboard |
 
 ---

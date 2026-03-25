@@ -39,7 +39,6 @@ const App = () => {
           {/* Public Routes */}
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/*" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/auth/google/callback" element={<GoogleCallback/>}/>
 
           {/* Protected Routes */}
