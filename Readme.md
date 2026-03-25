@@ -501,7 +501,7 @@ UPDATE users SET role = 'admin' WHERE email = 'yourname@example.com';
 
 ## API Workflows
 
-### 1. Secure User Login (`POST /api/users/login`)
+### 1. Secure User Login workflow (`POST /api/users/login`)
 
 #### Authentication Architecture
 
@@ -616,7 +616,7 @@ ON API ERROR RESPONSE (error):
     RETURN REJECT error
 ```
 
-### 3. Search Notes (`GET /api/notes/search`)
+### 3. Search Notes workflow (`GET /api/notes/search`)
 
 - Backend builds SQL queries dynamically based on URL parameters
 - Filtering is done directly in the database (not in memory)
@@ -657,7 +657,7 @@ ENDPOINT GET /api/notes/search:
         TAKE page_size
         
     SET final_notes = EXECUTE(QUERY)
-    SET calculated_total_pages = CEIL(total_matches / page_size)
+    SET calculated_total_pages = INTEGER_DIVIDE((total_matches + page_size - 1), page_size)
     
     RETURN 200 OK:
         {
@@ -668,6 +668,52 @@ ENDPOINT GET /api/notes/search:
             "items": final_notes
         }
 ```
+
+### 4. Update Note workflow
+
+### Authorization & Safe Updates
+- Checks if the user is owner or has edit access
+- Only allows update if user has permission
+- Supports updating only the fields that are provided
+- Sends a notification after update
+- If notification fails, the note is still saved
+- Prevents errors in notification from affecting main functionality
+
+#### Backend API Logic Flow (FastAPI)
+
+```text
+ENDPOINT PUT /api/notes/{id}:
+    REQUIRE AuthToken -> Extract current_user
+    
+    FETCH note FROM database WHERE id == note_id
+    IF note NOT FOUND -> THROW 404 Not Found
+    
+    SET is_owner = (note.owner_id == current_user.id)
+    SET has_edit_rights = EVALUATE (current_user IN note.shares AND permission == "edit")
+    
+    IF NOT is_owner AND NOT has_edit_rights:
+        THROW 403 Forbidden
+        
+    IF payload.title EXISTS:
+        SET note.title = payload.title
+        
+    IF payload.content EXISTS:
+        SET note.content = payload.content
+        
+    IF payload.tag_ids EXISTS:
+        FETCH valid_tags FROM database WHERE id IN payload.tag_ids
+        SET note.tags = valid_tags
+        
+    COMMIT database transaction
+    
+    TRY:
+        EXECUTE notify_shared_users(note, current_user)
+    CATCH notification_error:
+        LOG notification_error
+        
+    RETURN 200 OK (note)
+```
+
 ---
 
 ## Authentication

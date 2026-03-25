@@ -156,7 +156,7 @@ def search_note(
     )
 
 
-    total_pages = (total + page_size -1)
+    total_pages = (total + page_size -1)// page_size
     logger.info(
         f"Search result: user_id={current_user.id} "
         f"total={total} page={page}/{total_pages}"
@@ -234,6 +234,7 @@ def update_note(
         notify_shared_users(note, current_user, db)
     except Exception as e:
         logger.error(f"Failed to send edit notification: {e}")
+
 
     return note
 
