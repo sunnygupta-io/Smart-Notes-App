@@ -29,7 +29,7 @@ export const toggleArchive = (id: number) =>
 export const searchNotes = (params: {
   q?: string;
   tag_id?: number;
-  archived?: boolean;
+  is_archived?: boolean; // Change 'archived' to 'is_archived'
   date_from?: string;
   date_to?: string;
   page?: number;

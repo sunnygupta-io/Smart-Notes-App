@@ -3,12 +3,12 @@ from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Foreign
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
-
+# junction table used for many to many relation ship
 note_tags = Table(
-    "note_tags",
-    Base.metadata,
-    Column("note_id", Integer, ForeignKey("notes.id", ondelete = "CASCADE")),
-    Column("tag_id", Integer, ForeignKey("tags.id", ondelete = "CASCADE")),
+    "note_tags", # name of the table
+    Base.metadata, # this tell sqlalchemy to register this model with all models
+    Column("note_id", Integer, ForeignKey("notes.id", ondelete = "CASCADE")), # If a note is deleted, related rows in this table are also deleted automatically
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete = "CASCADE")),  # If tag is deleted, related rows removed
 )
 
 

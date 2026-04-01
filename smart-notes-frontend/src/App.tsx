@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminPanel from "./pages/AdminPanel";
 import Dashboard from "./pages/Dashboard";
-import NoteEditor from "./pages/NoteEditor";
 import Notifications from "./pages/Notifications";
 import SharedNotes from "./pages/SharedNotes";
 import GoogleCallback from "./pages/GoogleCallback";
@@ -47,22 +46,6 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notes/new"
-            element={
-              <ProtectedRoute>
-                <NoteEditor />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notes/:id"
-            element={
-              <ProtectedRoute>
-                <NoteEditor />
               </ProtectedRoute>
             }
           />

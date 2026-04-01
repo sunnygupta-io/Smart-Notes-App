@@ -2,54 +2,62 @@ import type { Note } from "../types/index";
 
 export interface SharedNoteCardProps {
   note: Note;
-  permission: string;
+  permission: "view" | "edit"; // <-- Strongly typed for the modal
   onOpen: () => void;
   onLeave: (e: React.MouseEvent) => void;
 }
 
-export default function SharedNoteCard({ note, permission, onOpen, onLeave }: SharedNoteCardProps) {
+export default function SharedNoteCard({
+  note,
+  permission,
+  onOpen,
+  onLeave,
+}: SharedNoteCardProps) {
   const formattedDate = new Date(note.updated_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
-  const preview = note.content
-    ? note.content.length > 120
-      ? note.content.slice(0, 120) + "..."
-      : note.content
-    : "No content available";
-
   return (
     <div
       onClick={onOpen}
-      className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 flex flex-col h-full group"
+      className="group relative flex flex-col h-full rounded-2xl p-6 cursor-pointer border bg-white border-gray-100 hover:border-blue-200 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1"
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="font-semibold text-gray-900 text-base leading-snug flex-1 line-clamp-2">
-          {note.title}
+      {/* Top Section: Title & Permission Badge */}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <h3 className="font-bold text-gray-900 text-lg leading-snug line-clamp-3 flex-1">
+          {note.title || "Untitled Note"}
         </h3>
-        <span
-          className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-            permission === "edit"
-              ? "bg-green-100 text-green-700 border border-green-200"
-              : "bg-gray-100 text-gray-600 border border-gray-200"
-          }`}
-        >
-          Can {permission}
-        </span>
+        
+        {/* Right side indicators */}
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
+              permission === "edit"
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            Can {permission}
+          </span>
+          {/* Subtle icon indicating it's a rich text document */}
+          <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </div>
       </div>
 
-      <p className="text-sm text-gray-500 mb-4 leading-relaxed flex-1 line-clamp-3">
-        {preview}
-      </p>
+      {/* Middle Section: Flexible spacer to push tags and footer to the bottom */}
+      <div className="flex-grow"></div>
 
+      {/* Tags Section */}
       {note.tags && note.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {note.tags.map((tag) => (
             <span
               key={tag.id}
-              className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded-md"
+              className="text-[11px] font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-100"
             >
               {tag.name}
             </span>
@@ -57,14 +65,24 @@ export default function SharedNoteCard({ note, permission, onOpen, onLeave }: Sh
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-        <span className="text-xs font-medium text-gray-400">Updated {formattedDate}</span>
-        <button
-          onClick={onLeave}
-          className="text-sm font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-        >
-          Leave Note
-        </button>
+      {/* Bottom Section: Footer */}
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100/80">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Updated: {formattedDate}
+        </span>
+
+        {/* Hover Actions */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Prevents the card from opening when clicking leave
+              onLeave(e);
+            }}
+            className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-md transition-colors"
+          >
+            Leave Note
+          </button>
+        </div>
       </div>
     </div>
   );

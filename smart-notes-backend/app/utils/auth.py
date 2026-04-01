@@ -14,7 +14,7 @@ import secrets
 
 logger = logging.getLogger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated= "auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated= "auto") # If old/weak algorithm is used → automatically mark it outdated
 
 def get_password_hash(password:str)-> str:
     return pwd_context.hash(password)

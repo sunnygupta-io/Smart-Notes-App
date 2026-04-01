@@ -9,7 +9,7 @@ interface Props {
 
 function ProtectedRoute({children, adminOnly= false}: Props){
     const {user} = useAuth()
-
+    // console.log("protected route")
     if(!user){
         return <Navigate to="/login"  replace/>
     }

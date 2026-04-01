@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { searchNotes, deleteNote, toggleArchive } from '../api/note';
 import { listTags } from '../api/tag';
 import type { Note, Tag } from '../types';
 import NoteCard from '../components/NoteCard';
+import NoteEditor from '../pages/NoteEditor'; // Ensure this path matches your file structure
+import { useAuth } from '../hooks/useAuth';
+
+
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
   const [notes, setNotes] = useState<Note[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [total, setTotal] = useState(0);
@@ -24,8 +25,24 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 1. Unified Fetch Logic (Uses Search API for everything to guarantee perfect pagination)
+  // --- NEW: MODAL STATES ---
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+
+  const openNewNote = () => {
+    setSelectedNoteId(null);
+    setIsEditorOpen(true);
+  };
+
+  const openExistingNote = (id: number) => {
+    setSelectedNoteId(id);
+    setIsEditorOpen(true);
+  };
+
+  const {user}= useAuth()
+  // 1. Unified Fetch Logic
   const fetchNotes = useCallback(async () => {
+    if(!user) return 
     setIsLoading(true);
     setError('');
 
@@ -33,7 +50,7 @@ const Dashboard = () => {
       const res = await searchNotes({
         q: query || undefined,
         tag_id: tagFilter !== '' ? tagFilter : undefined,
-        archived: showArchived ? true : false, // Explicitly request active (false) or archived (true)
+        is_archived: showArchived,
         date_from: dateFrom ? new Date(`${dateFrom}T00:00:00`).toISOString() : undefined,
         date_to: dateTo ? new Date(`${dateTo}T23:59:59.999`).toISOString() : undefined,
         page,
@@ -59,7 +76,7 @@ const Dashboard = () => {
       .catch(() => {});
   }, []);
 
-  // Reset to page 1 ONLY when filters change (not when page changes)
+  // Reset to page 1 ONLY when filters change
   useEffect(() => {
     setPage(1);
   }, [query, tagFilter, showArchived, dateFrom, dateTo]);
@@ -70,7 +87,7 @@ const Dashboard = () => {
 
     try {
       await deleteNote(id);
-      fetchNotes(); // Re-fetch to keep pagination perfectly in sync
+      fetchNotes(); // Re-fetch to keep pagination in sync
     } catch {
       alert('Failed to delete note');
     }
@@ -80,7 +97,7 @@ const Dashboard = () => {
     e.stopPropagation();
     try {
       await toggleArchive(id);
-      fetchNotes(); // Re-fetch to keep pagination perfectly in sync
+      fetchNotes(); // Re-fetch to keep pagination in sync
     } catch {
       alert('Failed to archive note');
     }
@@ -89,7 +106,7 @@ const Dashboard = () => {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] text-gray-900 font-sans">
+    <div className="min-h-screen bg-[#f9fafb] text-gray-900 font-sans relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -98,7 +115,7 @@ const Dashboard = () => {
             <p className="text-sm text-gray-500 mt-1">Manage and filter your thoughts</p>
           </div>
           <button
-            onClick={() => navigate('/notes/new')}
+            onClick={openNewNote}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <span className="text-lg leading-none">+</span> New Note
@@ -213,7 +230,7 @@ const Dashboard = () => {
             </p>
             {!query && tagFilter === '' && !showArchived && !dateFrom && !dateTo && (
               <button
-                onClick={() => navigate('/notes/new')}
+                onClick={openNewNote}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md shadow-blue-500/20 hover:-translate-y-0.5"
               >
                 Create Your First Note
@@ -229,7 +246,7 @@ const Dashboard = () => {
               <NoteCard
                 key={note.id}
                 note={note}
-                onOpen={() => navigate(`/notes/${note.id}`)}
+                onOpen={() => openExistingNote(note.id)}
                 onDelete={handleDelete}
                 onArchive={handleArchive}
               />
@@ -274,6 +291,14 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* --- THE NOTE EDITOR MODAL --- */}
+      <NoteEditor 
+        isOpen={isEditorOpen} 
+        onClose={() => setIsEditorOpen(false)} 
+        noteId={selectedNoteId} 
+        onSaved={fetchNotes} 
+      />
     </div>
   );
 };

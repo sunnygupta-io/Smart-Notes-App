@@ -3,7 +3,8 @@ from app.models.models import Note, User
 from fastapi import HTTPException, status
 
 
-# to get note
+# to get note 
+# but now i have to use it from note_repo
 def get_note_or_404(note_id: int, db:Session)->  Note:
     note = db.query(Note).filter(Note.id == note_id).first()
     if not note:

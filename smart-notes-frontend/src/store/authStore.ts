@@ -22,12 +22,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, isLoading: false });
   },
 
-  checkAuth: async()=>{
+  checkAuth: async () => {
     try {
-        const res = await getMe();
-        set({user: res.data, isLoading: false});
+      const res = await getMe();
+      if (res.data) {
+        // console.log(res.data)
+        set({ user: res.data, isLoading: false });
+      } else {
+        set({ user: null, isLoading: false });
+      }
     } catch {
-        set({user: null, isLoading: false})
+      set({ user: null, isLoading: false });
     }
-  }
+  },
 }));

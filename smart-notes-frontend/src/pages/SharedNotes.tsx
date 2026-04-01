@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { getSharedWithMe, revokeShare } from "../api/share";
 import type { Note } from "../types/index";
 import { useAuth } from "../hooks/useAuth";
 import SharedNoteCard from "../components/SharedNoteCard";
+import NoteEditor from "../pages/NoteEditor"; // <-- Import the NoteEditor modal
 
 interface SharedNoteWithPermission {
   note: Note;
@@ -11,29 +11,40 @@ interface SharedNoteWithPermission {
 }
 
 const SharedNotes = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [items, setItems] = useState<SharedNoteWithPermission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadSharedNotes = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const res = await getSharedWithMe();
-        setItems(res.data);
-      } catch {
-        setError("Failed to load your shared notes. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // --- NEW: MODAL STATES ---
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+  const [selectedPermission, setSelectedPermission] = useState<"view" | "edit">("view");
 
-    loadSharedNotes();
+  const openNote = (id: number, permission: "view" | "edit") => {
+    setSelectedNoteId(id);
+    setSelectedPermission(permission);
+    setIsEditorOpen(true);
+  };
+
+  // Abstracted fetch logic so we can refresh the grid when a shared note is edited
+  const fetchSharedNotes = useCallback(async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const res = await getSharedWithMe();
+      setItems(res.data);
+    } catch {
+      setError("Failed to load your shared notes. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSharedNotes();
+  }, [fetchSharedNotes]);
 
   const handleLeave = async (note: Note, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,7 +60,7 @@ const SharedNotes = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+    <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 relative">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Shared With Me</h1>
         <p className="text-sm text-gray-500 mt-2">
@@ -83,12 +94,21 @@ const SharedNotes = () => {
               key={note.id}
               note={note}
               permission={permission}
-              onOpen={() => navigate(`/notes/${note.id}`,{state: {permission}})}
+              onOpen={() => openNote(note.id, permission)}
               onLeave={(e) => handleLeave(note, e)}
             />
           ))}
         </div>
       )}
+
+      {/* --- THE NOTE EDITOR MODAL --- */}
+      <NoteEditor 
+        isOpen={isEditorOpen} 
+        onClose={() => setIsEditorOpen(false)} 
+        noteId={selectedNoteId}
+        permission={selectedPermission} // Passes whether they can view or edit
+        onSaved={fetchSharedNotes} // Refreshes titles/tags if they edit something
+      />
     </div>
   );
 };

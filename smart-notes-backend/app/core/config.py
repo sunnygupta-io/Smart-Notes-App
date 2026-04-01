@@ -13,6 +13,6 @@ class Settings(BaseSettings):
     REDIRECT_URI: str = ""
     REFRESH_TOKEN_EXPIRE_DAYS: str =""
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env") # it tells that load all values from .env file
 
 settings = Settings()
