@@ -18,6 +18,8 @@ def get_admin_service(db: Session = Depends(get_db))-> AdminService:
 
 
 
+
+
 # list all users api
 @router.get("/users", response_model=PaginatedUsersResponse)
 def list_all_users(
